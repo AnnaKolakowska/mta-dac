@@ -1,0 +1,58 @@
+Vagrant.configure("2") do |config|
+  
+    config.vm.provider "virtualbox" do |vb|
+      vb.gui = false
+      vb.memory = "2048"
+      vb.cpus = "1"
+    end
+  
+    subnet="192.168.33"
+  
+    config.vm.define "db" do |config|
+      config.vm.box = "ubuntu/xenial64"
+      config.vm.hostname = "db"
+      config.vm.network "private_network", ip: "#{subnet}.11"
+      config.vm.provision "file", source: "init.sql", destination: "/tmp/init.sql"
+      config.vm.provision "shell", inline: <<-SHELL
+        sudo apt-get -y update
+        echo "mysql-server mysql-server/root_password password root" | sudo debconf-set-selections
+        echo "mysql-server mysql-server/root_password_again password root" | sudo debconf-set-selections
+        sudo apt-get -y install mysql-server
+        mysql --user=root --password=root < /tmp/init.sql
+      SHELL
+      config.vm.provision "file", source: "mysqld.cnf", destination: "/tmp/mysqld.cnf"
+      config.vm.provision "shell", inline: <<-SHELL
+        sudo rm /etc/mysql/mysql.conf.d/mysqld.cnf
+        sudo cp /tmp/mysqld.cnf /etc/mysql/mysql.conf.d/mysqld.cnf
+        sudo service mysql restart
+      SHELL
+    end
+  
+    config.vm.define "app" do |config|
+      config.vm.box = "ubuntu/xenial64"
+      config.vm.hostname = "app"
+      config.vm.network "private_network", ip: "#{subnet}.12"
+      config.vm.provision "file", source: "tomcat.service", destination: "/tmp/tomcat.service"
+      config.vm.provision "shell", inline: <<-SHELL
+        echo "192.168.33.11   db" | sudo tee --append /etc/hosts
+        sudo apt-get -y update
+        sudo apt-get -y install default-jdk
+        sudo useradd -r tomcat9 --shell /bin/false
+        cd /opt
+        sudo wget --quiet http://archive.apache.org/dist/tomcat/tomcat-9/v9.0.0.M22/bin/apache-tomcat-9.0.0.M22.tar.gz
+        sudo tar -zxf apache-tomcat-9.0.0.M22.tar.gz
+        sudo ln -s apache-tomcat-9.0.0.M22 tomcat
+        sudo chown -hR tomcat9: tomcat apache-tomcat-9.0.0.M22
+        cd ~
+        sudo mv /tmp/tomcat.service /etc/systemd/system/tomcat.service
+        sudo systemctl daemon-reload
+        sudo systemctl enable tomcat
+        sudo rm -r /opt/tomcat/webapps/ROOT
+        sudo wget --quiet https://broyal.blob.core.windows.net/mta/mta-java.war
+        sudo cp mta-java.war /opt/tomcat/webapps/ROOT.war
+        sudo systemctl start tomcat
+        sudo systemctl status tomcat
+      SHELL
+    end
+  
+  end

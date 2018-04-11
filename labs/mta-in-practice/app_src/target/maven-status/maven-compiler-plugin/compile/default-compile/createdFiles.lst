@@ -1,0 +1,8 @@
+atsea/controller/AppInfoController.class
+atsea/controller/HealthController.class
+atsea/Application.class
+atsea/HomeController.class
+atsea/model/AppInfo.class
+atsea/repositories/AppInfoRepository.class
+atsea/service/AppInfoServiceImpl.class
+atsea/service/AppInfoService.class
