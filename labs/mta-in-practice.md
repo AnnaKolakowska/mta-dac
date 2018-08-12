@@ -59,7 +59,7 @@ You'll need a Windows/Mac laptop with the configurations below:
 Before we can do anything, we need to build a foundational understanding of our target application.  The following has been provided by the customer:
 
 * [Architecture + App Deployment Instructions](mta-in-practice/app_deployment.md)
-* [App Source Code](mta-in-practice/app_src)
+* App Source Code (download package >> labs/mta-in-practice/app_src)
 * [Working Virtual Machine](mta-in-practice/app_vm)
 
 Use these resources, ensuring your team understands the app's...

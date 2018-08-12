@@ -1,0 +1,13 @@
+# macOS
+.DS_Store
+
+# image builds
+build.sh
+Dockerfile
+
+# Docker - No revealing the answers ;-)
+Dockerfile*
+docker-compose*
+
+#optimization
+target/
